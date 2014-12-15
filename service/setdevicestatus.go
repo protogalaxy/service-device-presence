@@ -2,16 +2,17 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"code.google.com/p/go.net/context"
+	"github.com/101loops/clock"
 	"github.com/arjantop/cuirass"
 	"github.com/garyburd/redigo/redis"
 	"github.com/julienschmidt/httprouter"
 	"github.com/protogalaxy/service-device-presence/device"
+	"github.com/protogalaxy/service-device-presence/util"
 )
 
 func NewRedisSetDeviceStatusCommand(pool *redis.Pool, dev *device.Device, status *device.DeviceStatus) *cuirass.Command {
@@ -22,7 +23,7 @@ func NewRedisSetDeviceStatusCommand(pool *redis.Pool, dev *device.Device, status
 				conn := pool.Get()
 				defer conn.Close()
 
-				bucketKey := fmt.Sprintf("%s:%s", status.UserId, "bucket")
+				bucketKey := util.CurrentBucket(clock.Work, status.UserId, util.DefaultBucketSize)
 
 				deviceString := dev.String()
 				var err error

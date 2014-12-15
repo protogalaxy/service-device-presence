@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/arjantop/cuirass"
+	"github.com/arjantop/vaquita"
 	"github.com/garyburd/redigo/redis"
 	"github.com/julienschmidt/httprouter"
 	"github.com/protogalaxy/service-device-presence/service"
@@ -40,7 +41,7 @@ func NewRedisPool() *redis.Pool {
 func main() {
 	redisPool := NewRedisPool()
 
-	exec := cuirass.NewExecutor(1 * time.Second)
+	exec := cuirass.NewExecutor(vaquita.NewEmptyMapConfig())
 
 	router := httprouter.New()
 	router.PUT("/status/:deviceType/:deviceId", service.NewSetDeviceStatus(exec, redisPool).ServeHTTP)

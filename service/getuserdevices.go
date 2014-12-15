@@ -2,17 +2,18 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"code.google.com/p/go.net/context"
+	"github.com/101loops/clock"
 	"github.com/arjantop/cuirass"
 	"github.com/garyburd/redigo/redis"
 	"github.com/julienschmidt/httprouter"
 	"github.com/protogalaxy/service-device-presence/device"
+	"github.com/protogalaxy/service-device-presence/util"
 )
 
 func NewRedisGetUserDevicesCommand(pool *redis.Pool, userId string) *cuirass.Command {
@@ -23,7 +24,8 @@ func NewRedisGetUserDevicesCommand(pool *redis.Pool, userId string) *cuirass.Com
 				conn := pool.Get()
 				defer conn.Close()
 
-				deviceList, err := redis.Strings(conn.Do("SUNION", fmt.Sprintf("%s:%s", userId, "bucket")))
+				bucketKeys := util.BucketRange(clock.Work, userId, util.DefaultBucketSize, -5, 0)
+				deviceList, err := redis.Strings(conn.Do("SUNION", toInterfaceSlice(bucketKeys)...))
 				if err != nil {
 					return err
 				}
@@ -65,7 +67,16 @@ func ExecRedisGetUserDevicesCommand(
 	cmd *cuirass.Command) ([]*device.Device, error) {
 
 	devices, err := exec.Exec(ctx, cmd)
+	devices, _ = devices.([]*device.Device)
 	return devices.([]*device.Device), err
+}
+
+func toInterfaceSlice(buckets []util.Bucket) []interface{} {
+	result := make([]interface{}, 0, len(buckets))
+	for _, b := range buckets {
+		result = append(result, b.String())
+	}
+	return result
 }
 
 type GetUserDevicesService struct {
