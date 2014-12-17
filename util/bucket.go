@@ -7,8 +7,6 @@ import (
 	"github.com/101loops/clock"
 )
 
-const DefaultBucketSize = time.Minute
-
 type Bucket struct {
 	prefix     string
 	bucketSize time.Duration

@@ -41,11 +41,14 @@ func NewRedisPool() *redis.Pool {
 func main() {
 	redisPool := NewRedisPool()
 
-	exec := cuirass.NewExecutor(vaquita.NewEmptyMapConfig())
+	config := vaquita.NewEmptyMapConfig()
+	propertyFactory := vaquita.NewPropertyFactory(config)
+	properties := service.NewBucketProperties(propertyFactory)
+	exec := cuirass.NewExecutor(config)
 
 	router := httprouter.New()
-	router.PUT("/status/:deviceType/:deviceId", service.NewSetDeviceStatus(exec, redisPool).ServeHTTP)
-	router.GET("/users/:userId", service.NewGetUserDevices(exec, redisPool).ServeHTTP)
+	router.PUT("/status/:deviceType/:deviceId", service.NewSetDeviceStatus(exec, properties, redisPool).ServeHTTP)
+	router.GET("/users/:userId", service.NewGetUserDevices(exec, properties, redisPool).ServeHTTP)
 
 	log.Fatal(http.ListenAndServe(":10000", router))
 }

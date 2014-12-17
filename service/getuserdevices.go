@@ -16,7 +16,7 @@ import (
 	"github.com/protogalaxy/service-device-presence/util"
 )
 
-func NewRedisGetUserDevicesCommand(pool *redis.Pool, userId string) *cuirass.Command {
+func NewRedisGetUserDevicesCommand(pool *redis.Pool, properties *BucketProperties, userId string) *cuirass.Command {
 	return cuirass.NewCommand("RedisGetUserDevices", func(ctx context.Context) (r interface{}, err error) {
 		c := make(chan error, 1)
 		go func() {
@@ -24,7 +24,7 @@ func NewRedisGetUserDevicesCommand(pool *redis.Pool, userId string) *cuirass.Com
 				conn := pool.Get()
 				defer conn.Close()
 
-				bucketKeys := util.BucketRange(clock.Work, userId, util.DefaultBucketSize, -5, 0)
+				bucketKeys := util.BucketRange(clock.Work, userId, properties.BucketSize.Get(), -properties.NumberOfBuckets.Get(), 0)
 				deviceList, err := redis.Strings(conn.Do("SUNION", toInterfaceSlice(bucketKeys)...))
 				if err != nil {
 					return err
@@ -80,14 +80,16 @@ func toInterfaceSlice(buckets []util.Bucket) []interface{} {
 }
 
 type GetUserDevicesService struct {
-	redisPool *redis.Pool
-	exec      *cuirass.Executor
+	redisPool  *redis.Pool
+	properties *BucketProperties
+	exec       *cuirass.Executor
 }
 
-func NewGetUserDevices(exec *cuirass.Executor, rp *redis.Pool) *GetUserDevicesService {
+func NewGetUserDevices(exec *cuirass.Executor, properties *BucketProperties, rp *redis.Pool) *GetUserDevicesService {
 	return &GetUserDevicesService{
-		redisPool: rp,
-		exec:      exec,
+		redisPool:  rp,
+		properties: properties,
+		exec:       exec,
 	}
 }
 
@@ -98,7 +100,7 @@ func (h *GetUserDevicesService) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	log.Printf("Getting devices for user %s", userId)
 
-	cmd := NewRedisGetUserDevicesCommand(h.redisPool, userId)
+	cmd := NewRedisGetUserDevicesCommand(h.redisPool, h.properties, userId)
 	userDevices, err := ExecRedisGetUserDevicesCommand(h.exec, ctx, cmd)
 	if err != nil {
 		log.Println(err)

@@ -15,7 +15,12 @@ import (
 	"github.com/protogalaxy/service-device-presence/util"
 )
 
-func NewRedisSetDeviceStatusCommand(pool *redis.Pool, dev *device.Device, status *device.DeviceStatus) *cuirass.Command {
+func NewRedisSetDeviceStatusCommand(
+	pool *redis.Pool,
+	properties *BucketProperties,
+	dev *device.Device,
+	status *device.DeviceStatus) *cuirass.Command {
+
 	return cuirass.NewCommand("RedisSetDeviceStatus", func(ctx context.Context) (interface{}, error) {
 		c := make(chan error, 1)
 		go func() {
@@ -23,16 +28,17 @@ func NewRedisSetDeviceStatusCommand(pool *redis.Pool, dev *device.Device, status
 				conn := pool.Get()
 				defer conn.Close()
 
-				bucketKey := util.CurrentBucket(clock.Work, status.UserId, util.DefaultBucketSize)
+				bucketKey := util.CurrentBucket(clock.Work, status.UserId, properties.BucketSize.Get())
 
 				deviceString := dev.String()
 				var err error
 				if status.Status == device.StatusOnline {
+					ttl := int(properties.Ttl().Seconds())
 					conn.Send("MULTI")
 					conn.Send("SADD", bucketKey, deviceString)
-					conn.Send("EXPIRE", bucketKey, 5*60)
+					conn.Send("EXPIRE", bucketKey, ttl)
 					conn.Send("SET", deviceString, status.UserId)
-					conn.Send("EXPIRE", deviceString, 5*60)
+					conn.Send("EXPIRE", deviceString, ttl)
 					_, err = conn.Do("EXEC")
 				} else {
 					_, err = conn.Do("DEL", deviceString)
@@ -59,14 +65,16 @@ func ExecRedisSetDeviceStatusCommand(
 }
 
 type SetDeviceStatusService struct {
-	redisPool *redis.Pool
-	exec      *cuirass.Executor
+	redisPool  *redis.Pool
+	properties *BucketProperties
+	exec       *cuirass.Executor
 }
 
-func NewSetDeviceStatus(exec *cuirass.Executor, rp *redis.Pool) *SetDeviceStatusService {
+func NewSetDeviceStatus(exec *cuirass.Executor, properties *BucketProperties, rp *redis.Pool) *SetDeviceStatusService {
 	return &SetDeviceStatusService{
-		redisPool: rp,
-		exec:      exec,
+		redisPool:  rp,
+		properties: properties,
+		exec:       exec,
 	}
 }
 
@@ -85,7 +93,7 @@ func (h *SetDeviceStatusService) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	}
 	log.Printf("Setting device status %s for user %s to %s", dev.String(), deviceStatus.UserId, deviceStatus.Status)
 
-	cmd := NewRedisSetDeviceStatusCommand(h.redisPool, &dev, &deviceStatus)
+	cmd := NewRedisSetDeviceStatusCommand(h.redisPool, h.properties, &dev, &deviceStatus)
 	err = ExecRedisSetDeviceStatusCommand(h.exec, ctx, cmd)
 	if err != nil {
 		log.Println(err)
