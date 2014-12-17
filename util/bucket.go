@@ -22,6 +22,9 @@ func CurrentBucket(c clock.Clock, prefix string, bucketSize time.Duration) Bucke
 }
 
 func BucketWithOffset(c clock.Clock, prefix string, bucketSize time.Duration, offset int) Bucket {
+	if bucketSize <= time.Second {
+		bucketSize = time.Second
+	}
 	return Bucket{
 		prefix:     prefix,
 		bucketSize: bucketSize,

@@ -24,7 +24,7 @@ func NewRedisGetUserDevicesCommand(pool *redis.Pool, properties *BucketPropertie
 				conn := pool.Get()
 				defer conn.Close()
 
-				bucketKeys := util.BucketRange(clock.Work, userId, properties.BucketSize.Get(), -properties.NumberOfBuckets.Get(), 0)
+				bucketKeys := util.BucketRange(clock.New(), userId, properties.BucketSize.Get(), -properties.NumberOfBuckets.Get(), 0)
 				deviceList, err := redis.Strings(conn.Do("SUNION", toInterfaceSlice(bucketKeys)...))
 				if err != nil {
 					return err

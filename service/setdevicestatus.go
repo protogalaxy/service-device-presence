@@ -28,7 +28,7 @@ func NewRedisSetDeviceStatusCommand(
 				conn := pool.Get()
 				defer conn.Close()
 
-				bucketKey := util.CurrentBucket(clock.Work, status.UserId, properties.BucketSize.Get())
+				bucketKey := util.CurrentBucket(clock.New(), status.UserId, properties.BucketSize.Get())
 
 				deviceString := dev.String()
 				var err error
