@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 
 	"code.google.com/p/go.net/context"
 	"github.com/101loops/clock"
 	"github.com/arjantop/cuirass"
+	"github.com/arjantop/saola/httpservice"
 	"github.com/garyburd/redigo/redis"
-	"github.com/julienschmidt/httprouter"
 	"github.com/protogalaxy/service-device-presence/device"
 	"github.com/protogalaxy/service-device-presence/util"
 )
@@ -78,10 +77,9 @@ func NewSetDeviceStatus(exec *cuirass.Executor, properties *BucketProperties, rp
 	}
 }
 
-func (h *SetDeviceStatusService) ServeHTTP(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	defer cancel()
-	dev := device.Device{ps.ByName("deviceType"), ps.ByName("deviceId")}
+func (h *SetDeviceStatusService) Do(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	ps := httpservice.GetParams(ctx)
+	dev := device.Device{ps.Get("deviceType"), ps.Get("deviceId")}
 
 	decoder := json.NewDecoder(r.Body)
 	var deviceStatus device.DeviceStatus

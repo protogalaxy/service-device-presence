@@ -2,19 +2,14 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/arjantop/cuirass"
+	"github.com/arjantop/saola/httpservice"
 	"github.com/arjantop/vaquita"
 	"github.com/garyburd/redigo/redis"
-	"github.com/julienschmidt/httprouter"
 	"github.com/protogalaxy/service-device-presence/service"
 )
-
-type HttpService interface {
-	http.Handler
-}
 
 func DoPing(c redis.Conn) error {
 	_, err := c.Do("PING")
@@ -46,9 +41,9 @@ func main() {
 	properties := service.NewBucketProperties(propertyFactory)
 	exec := cuirass.NewExecutor(config)
 
-	router := httprouter.New()
-	router.PUT("/status/:deviceType/:deviceId", service.NewSetDeviceStatus(exec, properties, redisPool).ServeHTTP)
-	router.GET("/users/:userId", service.NewGetUserDevices(exec, properties, redisPool).ServeHTTP)
+	endpoint := httpservice.NewEndpoint()
+	endpoint.PUT("/status/:deviceType/:deviceId", service.NewSetDeviceStatus(exec, properties, redisPool))
+	endpoint.GET("/users/:userId", service.NewGetUserDevices(exec, properties, redisPool))
 
-	log.Fatal(http.ListenAndServe(":10000", router))
+	log.Fatal(httpservice.Serve(":10000", endpoint))
 }

@@ -5,13 +5,12 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"code.google.com/p/go.net/context"
 	"github.com/101loops/clock"
 	"github.com/arjantop/cuirass"
+	"github.com/arjantop/saola/httpservice"
 	"github.com/garyburd/redigo/redis"
-	"github.com/julienschmidt/httprouter"
 	"github.com/protogalaxy/service-device-presence/device"
 	"github.com/protogalaxy/service-device-presence/util"
 )
@@ -93,10 +92,9 @@ func NewGetUserDevices(exec *cuirass.Executor, properties *BucketProperties, rp 
 	}
 }
 
-func (h *GetUserDevicesService) ServeHTTP(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	defer cancel()
-	userId := ps.ByName("userId")
+func (h *GetUserDevicesService) Do(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	ps := httpservice.GetParams(ctx)
+	userId := ps.Get("userId")
 
 	log.Printf("Getting devices for user %s", userId)
 
