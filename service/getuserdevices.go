@@ -92,7 +92,7 @@ func NewGetUserDevices(exec *cuirass.Executor, properties *BucketProperties, rp 
 	}
 }
 
-func (h *GetUserDevicesService) Do(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (h *GetUserDevicesService) DoHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	ps := httpservice.GetParams(ctx)
 	userId := ps.Get("userId")
 
@@ -103,7 +103,7 @@ func (h *GetUserDevicesService) Do(ctx context.Context, w http.ResponseWriter, r
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "error getting devices for user", http.StatusInternalServerError)
-		return
+		return nil
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -119,4 +119,10 @@ func (h *GetUserDevicesService) Do(ctx context.Context, w http.ResponseWriter, r
 	if err != nil {
 		log.Println(err)
 	}
+	return nil
+}
+
+func (h *GetUserDevicesService) Do(ctx context.Context) error {
+	r := httpservice.GetHttpRequest(ctx)
+	return h.DoHTTP(ctx, r.Writer, r.Request)
 }

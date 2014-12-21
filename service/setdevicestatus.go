@@ -77,7 +77,7 @@ func NewSetDeviceStatus(exec *cuirass.Executor, properties *BucketProperties, rp
 	}
 }
 
-func (h *SetDeviceStatusService) Do(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (h *SetDeviceStatusService) DoHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	ps := httpservice.GetParams(ctx)
 	dev := device.Device{ps.Get("deviceType"), ps.Get("deviceId")}
 
@@ -87,7 +87,7 @@ func (h *SetDeviceStatusService) Do(ctx context.Context, w http.ResponseWriter, 
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "invalid request body", http.StatusBadRequest)
-		return
+		return nil
 	}
 	log.Printf("Setting device status %s for user %s to %s", dev.String(), deviceStatus.UserId, deviceStatus.Status)
 
@@ -96,7 +96,7 @@ func (h *SetDeviceStatusService) Do(ctx context.Context, w http.ResponseWriter, 
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "error settind device name", http.StatusInternalServerError)
-		return
+		return nil
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -104,4 +104,10 @@ func (h *SetDeviceStatusService) Do(ctx context.Context, w http.ResponseWriter, 
 	if err != nil {
 		log.Println(err)
 	}
+	return nil
+}
+
+func (h *SetDeviceStatusService) Do(ctx context.Context) error {
+	r := httpservice.GetHttpRequest(ctx)
+	return h.DoHTTP(ctx, r.Writer, r.Request)
 }
