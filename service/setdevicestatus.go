@@ -8,6 +8,7 @@ import (
 	"code.google.com/p/go.net/context"
 	"github.com/101loops/clock"
 	"github.com/arjantop/cuirass"
+	"github.com/arjantop/cuirass/util/contextutil"
 	"github.com/arjantop/saola/httpservice"
 	"github.com/garyburd/redigo/redis"
 	"github.com/protogalaxy/service-device-presence/device"
@@ -21,36 +22,28 @@ func NewRedisSetDeviceStatusCommand(
 	status *device.DeviceStatus) *cuirass.Command {
 
 	return cuirass.NewCommand("RedisSetDeviceStatus", func(ctx context.Context) (interface{}, error) {
-		c := make(chan error, 1)
-		go func() {
-			c <- func() error {
-				conn := pool.Get()
-				defer conn.Close()
+		err := contextutil.Do(ctx, func() error {
+			conn := pool.Get()
+			defer conn.Close()
 
-				bucketKey := util.CurrentBucket(clock.New(), status.UserId, properties.BucketSize.Get())
+			bucketKey := util.CurrentBucket(clock.New(), status.UserId, properties.BucketSize.Get())
 
-				deviceString := dev.String()
-				var err error
-				if status.Status == device.StatusOnline {
-					ttl := int(properties.Ttl().Seconds())
-					conn.Send("MULTI")
-					conn.Send("SADD", bucketKey, deviceString)
-					conn.Send("EXPIRE", bucketKey, ttl)
-					conn.Send("SET", deviceString, status.UserId)
-					conn.Send("EXPIRE", deviceString, ttl)
-					_, err = conn.Do("EXEC")
-				} else {
-					_, err = conn.Do("DEL", deviceString)
-				}
-				return err
-			}()
-		}()
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		case err := <-c:
-			return nil, err
-		}
+			deviceString := dev.String()
+			var err error
+			if status.Status == device.StatusOnline {
+				ttl := int(properties.Ttl().Seconds())
+				conn.Send("MULTI")
+				conn.Send("SADD", bucketKey, deviceString)
+				conn.Send("EXPIRE", bucketKey, ttl)
+				conn.Send("SET", deviceString, status.UserId)
+				conn.Send("EXPIRE", deviceString, ttl)
+				_, err = conn.Do("EXEC")
+			} else {
+				_, err = conn.Do("DEL", deviceString)
+			}
+			return err
+		})
+		return nil, err
 	}).Build()
 }
 
