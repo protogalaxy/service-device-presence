@@ -93,10 +93,11 @@ func NewGetUserDevices(exec *cuirass.Executor, properties *BucketProperties, rp 
 }
 
 func (h *GetUserDevicesService) DoHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	logger := util.GetContextLogger(ctx)
 	ps := httpservice.GetParams(ctx)
 	userId := ps.Get("userId")
 
-	log.Printf("Getting devices for user %s", userId)
+	logger.Info("Getting devices", "user_id", userId)
 
 	cmd := NewRedisGetUserDevicesCommand(h.redisPool, h.properties, userId)
 	userDevices, err := ExecRedisGetUserDevicesCommand(h.exec, ctx, cmd)

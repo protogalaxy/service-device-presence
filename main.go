@@ -5,10 +5,12 @@ import (
 	"time"
 
 	"github.com/arjantop/cuirass"
+	"github.com/arjantop/saola"
 	"github.com/arjantop/saola/httpservice"
 	"github.com/arjantop/vaquita"
 	"github.com/garyburd/redigo/redis"
 	"github.com/protogalaxy/service-device-presence/service"
+	"github.com/protogalaxy/service-device-presence/util"
 )
 
 func DoPing(c redis.Conn) error {
@@ -42,8 +44,14 @@ func main() {
 	exec := cuirass.NewExecutor(config)
 
 	endpoint := httpservice.NewEndpoint()
-	endpoint.PUT("/status/:deviceType/:deviceId", service.NewSetDeviceStatus(exec, properties, redisPool))
-	endpoint.GET("/users/:userId", service.NewGetUserDevices(exec, properties, redisPool))
+
+	endpoint.PUT("/status/:deviceType/:deviceId", saola.Apply(
+		service.NewSetDeviceStatus(exec, properties, redisPool),
+		util.NewContextLoggerFilter()))
+
+	endpoint.GET("/users/:userId", saola.Apply(
+		service.NewGetUserDevices(exec, properties, redisPool),
+		util.NewContextLoggerFilter()))
 
 	log.Fatal(httpservice.Serve(":10000", endpoint))
 }

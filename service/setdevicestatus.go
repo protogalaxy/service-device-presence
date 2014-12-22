@@ -78,6 +78,7 @@ func NewSetDeviceStatus(exec *cuirass.Executor, properties *BucketProperties, rp
 }
 
 func (h *SetDeviceStatusService) DoHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	logger := util.GetContextLogger(ctx)
 	ps := httpservice.GetParams(ctx)
 	dev := device.Device{ps.Get("deviceType"), ps.Get("deviceId")}
 
@@ -89,7 +90,11 @@ func (h *SetDeviceStatusService) DoHTTP(ctx context.Context, w http.ResponseWrit
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return nil
 	}
-	log.Printf("Setting device status %s for user %s to %s", dev.String(), deviceStatus.UserId, deviceStatus.Status)
+
+	logger.Info("Setting device status",
+		"device", dev.String(),
+		"user_id", deviceStatus.UserId,
+		"device_status", deviceStatus.Status)
 
 	cmd := NewRedisSetDeviceStatusCommand(h.redisPool, h.properties, &dev, &deviceStatus)
 	err = ExecRedisSetDeviceStatusCommand(h.exec, ctx, cmd)
