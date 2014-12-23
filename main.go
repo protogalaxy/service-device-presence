@@ -5,12 +5,19 @@ import (
 	"time"
 
 	"github.com/arjantop/cuirass"
+	"github.com/arjantop/cuirass/metricsstream"
 	"github.com/arjantop/saola"
 	"github.com/arjantop/saola/httpservice"
 	"github.com/arjantop/vaquita"
 	"github.com/garyburd/redigo/redis"
 	"github.com/protogalaxy/service-device-presence/service"
 	"github.com/protogalaxy/service-device-presence/util"
+	"github.com/quipo/statsd"
+)
+
+import (
+	"net/http"
+	_ "net/http/pprof"
 )
 
 func DoPing(c redis.Conn) error {
@@ -43,19 +50,28 @@ func main() {
 	properties := service.NewBucketProperties(propertyFactory)
 	exec := cuirass.NewExecutor(config)
 
+	statsdClient := statsd.NewStatsdClient("localhost:8125", "stats.service.devicepresence.")
+	statsdClient.CreateSocket()
+
 	endpoint := httpservice.NewEndpoint()
 
 	endpoint.PUT("/status/:deviceType/:deviceId", saola.Apply(
 		service.NewSetDeviceStatus(exec, properties, redisPool),
 		util.NewContextLoggerFilter(),
+		util.NewResponseStatsFilter(statsdClient),
 		util.NewErrorResponseFilter(),
 		util.NewErrorLoggerFilter()))
 
 	endpoint.GET("/users/:userId", saola.Apply(
 		service.NewGetUserDevices(exec, properties, redisPool),
 		util.NewContextLoggerFilter(),
+		util.NewResponseStatsFilter(statsdClient),
 		util.NewErrorResponseFilter(),
 		util.NewErrorLoggerFilter()))
 
+	go func() {
+		http.Handle("/cuirass.stream", metricsstream.NewMetricsStream(exec))
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	log.Fatal(httpservice.Serve(":10000", endpoint))
 }
