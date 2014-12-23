@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"code.google.com/p/go.net/context"
@@ -79,9 +78,8 @@ func (h *SetDeviceStatusService) DoHTTP(ctx context.Context, w http.ResponseWrit
 	var deviceStatus device.DeviceStatus
 	err := decoder.Decode(&deviceStatus)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "invalid request body", http.StatusBadRequest)
-		return nil
+		return util.NewCustomError(http.StatusBadRequest, "problem decoding request body", err,
+			util.Data{"device_type": dev.DeviceType, "device_id": dev.DeviceId})
 	}
 
 	logger.Info("Setting device status",
@@ -92,16 +90,12 @@ func (h *SetDeviceStatusService) DoHTTP(ctx context.Context, w http.ResponseWrit
 	cmd := NewRedisSetDeviceStatusCommand(h.redisPool, h.properties, &dev, &deviceStatus)
 	err = ExecRedisSetDeviceStatusCommand(h.exec, ctx, cmd)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "error settind device name", http.StatusInternalServerError)
-		return nil
+		return util.NewErrorResponse("problem setting device status", err,
+			util.Data{"device_type": dev.DeviceType, "device_id": dev.DeviceId})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte("{}\n"))
-	if err != nil {
-		log.Println(err)
-	}
 	return nil
 }
 

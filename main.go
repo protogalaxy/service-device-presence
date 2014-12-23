@@ -20,7 +20,7 @@ func DoPing(c redis.Conn) error {
 
 func NewRedisPool() *redis.Pool {
 	return &redis.Pool{
-		MaxIdle:     20,
+		MaxIdle:     50,
 		IdleTimeout: time.Minute,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", "localhost:6379")
@@ -47,11 +47,15 @@ func main() {
 
 	endpoint.PUT("/status/:deviceType/:deviceId", saola.Apply(
 		service.NewSetDeviceStatus(exec, properties, redisPool),
-		util.NewContextLoggerFilter()))
+		util.NewContextLoggerFilter(),
+		util.NewErrorResponseFilter(),
+		util.NewErrorLoggerFilter()))
 
 	endpoint.GET("/users/:userId", saola.Apply(
 		service.NewGetUserDevices(exec, properties, redisPool),
-		util.NewContextLoggerFilter()))
+		util.NewContextLoggerFilter(),
+		util.NewErrorResponseFilter(),
+		util.NewErrorLoggerFilter()))
 
 	log.Fatal(httpservice.Serve(":10000", endpoint))
 }

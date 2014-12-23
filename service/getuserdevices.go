@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -93,14 +94,12 @@ func (h *GetUserDevicesService) DoHTTP(ctx context.Context, w http.ResponseWrite
 	ps := httpservice.GetParams(ctx)
 	userId := ps.Get("userId")
 
-	logger.Info("Getting devices", "user_id", userId)
+	logger.Info("getting devices", "user_id", userId)
 
 	cmd := NewRedisGetUserDevicesCommand(h.redisPool, h.properties, userId)
 	userDevices, err := ExecRedisGetUserDevicesCommand(h.exec, ctx, cmd)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "error getting devices for user", http.StatusInternalServerError)
-		return nil
+		return util.NewErrorResponse("problem getting devices", err, util.Data{"user": userId})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -114,7 +113,7 @@ func (h *GetUserDevicesService) DoHTTP(ctx context.Context, w http.ResponseWrite
 	}
 	err = encoder.Encode(&result)
 	if err != nil {
-		log.Println(err)
+		return fmt.Errorf("error encoding response: ", err)
 	}
 	return nil
 }
