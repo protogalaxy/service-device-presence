@@ -44,19 +44,24 @@ func NewRedisPool() *redis.Pool {
 
 func main() {
 	redisPool := NewRedisPool()
+	defer redisPool.Close()
 
 	config := vaquita.NewEmptyMapConfig()
+	config.SetProperty("cuirass.command.RedisSetDeviceStatus.execution.isolation.thread.timeoutInMilliseconds", "30")
+	config.SetProperty("cuirass.command.RedisGetUserDevices.execution.isolation.thread.timeoutInMilliseconds", "50")
+
 	propertyFactory := vaquita.NewPropertyFactory(config)
 	properties := service.NewBucketProperties(propertyFactory)
 	exec := cuirass.NewExecutor(config)
 
-	statsdClient := statsd.NewStatsdClient("localhost:8125", "stats.service.devicepresence.")
+	statsdClient := statsd.NewStatsdClient("localhost:8125", "protogalaxy.service.devicepresence.")
 	statsdClient.CreateSocket()
 
 	endpoint := httpservice.NewEndpoint()
 
 	endpoint.PUT("/status/:deviceType/:deviceId", saola.Apply(
 		service.NewSetDeviceStatus(exec, properties, redisPool),
+		httpservice.NewCancellationFilter(),
 		util.NewContextLoggerFilter(),
 		util.NewResponseStatsFilter(statsdClient),
 		util.NewErrorResponseFilter(),
@@ -64,6 +69,7 @@ func main() {
 
 	endpoint.GET("/users/:userId", saola.Apply(
 		service.NewGetUserDevices(exec, properties, redisPool),
+		httpservice.NewCancellationFilter(),
 		util.NewContextLoggerFilter(),
 		util.NewResponseStatsFilter(statsdClient),
 		util.NewErrorResponseFilter(),

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"code.google.com/p/go.net/context"
 	"github.com/101loops/clock"
 	"github.com/arjantop/cuirass"
 	"github.com/arjantop/cuirass/util/contextutil"
@@ -15,6 +14,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/protogalaxy/service-device-presence/device"
 	"github.com/protogalaxy/service-device-presence/util"
+	"golang.org/x/net/context"
 )
 
 func NewRedisGetUserDevicesCommand(pool *redis.Pool, properties *BucketProperties, userId string) *cuirass.Command {
@@ -119,6 +119,5 @@ func (h *GetUserDevicesService) DoHTTP(ctx context.Context, w http.ResponseWrite
 }
 
 func (h *GetUserDevicesService) Do(ctx context.Context) error {
-	r := httpservice.GetHttpRequest(ctx)
-	return h.DoHTTP(ctx, r.Writer, r.Request)
+	return httpservice.Do(h, ctx)
 }

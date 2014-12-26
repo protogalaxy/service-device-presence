@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"code.google.com/p/go.net/context"
 	"github.com/arjantop/saola"
 	"github.com/arjantop/saola/httpservice"
 	"github.com/quipo/statsd"
+	"golang.org/x/net/context"
 )
 
 type responseLoggingWriter struct {

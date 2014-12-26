@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"code.google.com/p/go.net/context"
 	"github.com/arjantop/saola"
 	"github.com/arjantop/saola/httpservice"
+	"golang.org/x/net/context"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 

@@ -3,8 +3,8 @@ package util
 import (
 	"os"
 
-	"code.google.com/p/go.net/context"
 	"github.com/arjantop/saola"
+	"golang.org/x/net/context"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
