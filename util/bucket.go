@@ -1,7 +1,7 @@
 package util
 
 import (
-	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/101loops/clock"
@@ -14,7 +14,7 @@ type Bucket struct {
 }
 
 func (b Bucket) String() string {
-	return fmt.Sprintf("%s:%d", b.prefix, b.timestamp.Unix()/int64(b.bucketSize.Seconds()))
+	return b.prefix + ":" + strconv.FormatInt(b.timestamp.Unix()/int64(b.bucketSize.Seconds()), 10)
 }
 
 func CurrentBucket(c clock.Clock, prefix string, bucketSize time.Duration) Bucket {
