@@ -121,3 +121,7 @@ func (h *GetUserDevicesService) DoHTTP(ctx context.Context, w http.ResponseWrite
 func (h *GetUserDevicesService) Do(ctx context.Context) error {
 	return httpservice.Do(h, ctx)
 }
+
+func (h *GetUserDevicesService) Name() string {
+	return "getuserdevices"
+}

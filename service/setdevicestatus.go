@@ -102,3 +102,7 @@ func (h *SetDeviceStatusService) DoHTTP(ctx context.Context, w http.ResponseWrit
 func (h *SetDeviceStatusService) Do(ctx context.Context) error {
 	return httpservice.Do(h, ctx)
 }
+
+func (h *SetDeviceStatusService) Name() string {
+	return "setdevicestatus"
+}

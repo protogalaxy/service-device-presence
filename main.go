@@ -9,10 +9,11 @@ import (
 	"github.com/arjantop/saola"
 	"github.com/arjantop/saola/httpservice"
 	"github.com/arjantop/vaquita"
+	"github.com/cactus/go-statsd-client/statsd"
 	"github.com/garyburd/redigo/redis"
 	"github.com/protogalaxy/service-device-presence/service"
+	"github.com/protogalaxy/service-device-presence/stats"
 	"github.com/protogalaxy/service-device-presence/util"
-	"github.com/quipo/statsd"
 )
 
 import (
@@ -54,8 +55,9 @@ func main() {
 	properties := service.NewBucketProperties(propertyFactory)
 	exec := cuirass.NewExecutor(config)
 
-	statsdClient := statsd.NewStatsdClient("localhost:8125", "protogalaxy.service.devicepresence.")
-	statsdClient.CreateSocket()
+	statsdClient, _ := statsd.Dial("localhost:8125", "protogalaxy.service.devicepresence")
+	defer statsdClient.Close()
+	statsReceiver := stats.NewStatsdStatsReceiver(statsdClient, 0.01)
 
 	endpoint := httpservice.NewEndpoint()
 
@@ -63,7 +65,8 @@ func main() {
 		service.NewSetDeviceStatus(exec, properties, redisPool),
 		httpservice.NewCancellationFilter(),
 		util.NewContextLoggerFilter(),
-		util.NewResponseStatsFilter(statsdClient),
+		saola.NewStatsFilter(statsReceiver),
+		httpservice.NewResponseStatsFilter(statsReceiver),
 		util.NewErrorResponseFilter(),
 		util.NewErrorLoggerFilter()))
 
@@ -71,7 +74,8 @@ func main() {
 		service.NewGetUserDevices(exec, properties, redisPool),
 		httpservice.NewCancellationFilter(),
 		util.NewContextLoggerFilter(),
-		util.NewResponseStatsFilter(statsdClient),
+		saola.NewStatsFilter(statsReceiver),
+		httpservice.NewResponseStatsFilter(statsReceiver),
 		util.NewErrorResponseFilter(),
 		util.NewErrorLoggerFilter()))
 
@@ -79,5 +83,7 @@ func main() {
 		http.Handle("/cuirass.stream", metricsstream.NewMetricsStream(exec))
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
-	log.Fatal(httpservice.Serve(":10000", endpoint))
+	log.Fatal(httpservice.Serve(":10000", saola.Apply(
+		endpoint,
+		httpservice.NewStdRequestLogFilter())))
 }
