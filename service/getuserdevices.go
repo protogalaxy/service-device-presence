@@ -113,7 +113,7 @@ func (h *GetUserDevicesService) DoHTTP(ctx context.Context, w http.ResponseWrite
 	}
 	err = encoder.Encode(&result)
 	if err != nil {
-		return fmt.Errorf("error encoding response: ", err)
+		return fmt.Errorf("error encoding response: %s", err)
 	}
 	return nil
 }

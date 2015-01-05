@@ -14,6 +14,7 @@ import (
 	"github.com/protogalaxy/service-device-presence/service"
 	"github.com/protogalaxy/service-device-presence/stats"
 	"github.com/protogalaxy/service-device-presence/util"
+	"github.com/wadey/go-zipkin"
 )
 
 import (
@@ -59,12 +60,15 @@ func main() {
 	defer statsdClient.Close()
 	statsReceiver := stats.NewStatsdStatsReceiver(statsdClient, 0.01)
 
+	scribe := []zipkin.SpanCollector{zipkin.NewScribeCollector("localhost:9410")}
+
 	endpoint := httpservice.NewEndpoint()
 
 	endpoint.PUT("/status/:deviceType/:deviceId", saola.Apply(
 		service.NewSetDeviceStatus(exec, properties, redisPool),
 		httpservice.NewCancellationFilter(),
 		util.NewContextLoggerFilter(),
+		util.NewServerTracingFilter(10000, scribe),
 		saola.NewStatsFilter(statsReceiver),
 		httpservice.NewResponseStatsFilter(statsReceiver),
 		util.NewErrorResponseFilter(),
@@ -74,6 +78,7 @@ func main() {
 		service.NewGetUserDevices(exec, properties, redisPool),
 		httpservice.NewCancellationFilter(),
 		util.NewContextLoggerFilter(),
+		util.NewServerTracingFilter(10000, scribe),
 		saola.NewStatsFilter(statsReceiver),
 		httpservice.NewResponseStatsFilter(statsReceiver),
 		util.NewErrorResponseFilter(),

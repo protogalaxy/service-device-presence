@@ -21,7 +21,7 @@ type ErrorResponse struct {
 }
 
 func (e ErrorResponse) Error() string {
-	return fmt.Sprintf("[%d] %s (%s)", e.StatusCode, e.Message, e.Error)
+	return fmt.Sprintf("[%d] %s (%s)", e.StatusCode, e.Message, e.Err)
 }
 
 func NewErrorResponse(message string, err error, data Data) ErrorResponse {
@@ -39,7 +39,7 @@ func NewCustomError(statusCode int, message string, err error, data Data) ErrorR
 
 func NewErrorResponseFilter() saola.Filter {
 	return saola.FuncFilter(func(ctx context.Context, s saola.Service) error {
-		req := httpservice.GetHttpRequest(ctx)
+		req := httpservice.GetServerRequest(ctx)
 		err := s.Do(ctx)
 		if er, ok := err.(ErrorResponse); ok {
 			req.Writer.WriteHeader(er.StatusCode)
@@ -54,7 +54,7 @@ func NewErrorResponseFilter() saola.Filter {
 			}
 			encodeError := encoder.Encode(&result)
 			if encodeError != nil {
-				return fmt.Errorf("error encoding the error response: ", encodeError)
+				return fmt.Errorf("error encoding the error response: %s", encodeError)
 			}
 		}
 		return err

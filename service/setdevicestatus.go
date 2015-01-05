@@ -72,7 +72,10 @@ func NewSetDeviceStatus(exec *cuirass.Executor, properties *BucketProperties, rp
 func (h *SetDeviceStatusService) DoHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	logger := util.GetContextLogger(ctx)
 	ps := httpservice.GetParams(ctx)
-	dev := device.Device{ps.Get("deviceType"), ps.Get("deviceId")}
+	dev := device.Device{
+		DeviceType: ps.Get("deviceType"),
+		DeviceId:   ps.Get("deviceId"),
+	}
 
 	decoder := json.NewDecoder(r.Body)
 	var deviceStatus device.DeviceStatus
