@@ -11,27 +11,28 @@ import (
 	"github.com/arjantop/cuirass"
 	"github.com/arjantop/cuirass/util/contextutil"
 	"github.com/arjantop/saola/httpservice"
+	"github.com/arjantop/saola/redisservice"
 	"github.com/garyburd/redigo/redis"
 	"github.com/protogalaxy/service-device-presence/device"
 	"github.com/protogalaxy/service-device-presence/util"
 	"golang.org/x/net/context"
 )
 
-func NewRedisGetUserDevicesCommand(pool *redis.Pool, properties *BucketProperties, userId string) *cuirass.Command {
+func NewRedisGetUserDevicesCommand(pool *redisservice.Pool, properties *BucketProperties, userId string) *cuirass.Command {
 	return cuirass.NewCommand("RedisGetUserDevices", func(ctx context.Context) (r interface{}, err error) {
 		err = contextutil.Do(ctx, func() error {
 			conn := pool.Get()
 			defer conn.Close()
 
 			bucketKeys := util.BucketRange(clock.New(), userId, properties.BucketSize.Get(), -properties.NumberOfBuckets.Get(), 0)
-			deviceList, err := redis.Strings(conn.Do("SUNION", toInterfaceSlice(bucketKeys)...))
+			deviceList, err := redis.Strings(conn.Do(ctx, "SUNION", toInterfaceSlice(bucketKeys)...))
 			if err != nil {
 				return err
 			}
 
 			devices := make([]*device.Device, 0)
 			for _, deviceString := range deviceList {
-				deviceExists, err := redis.Bool(conn.Do("EXISTS", deviceString))
+				deviceExists, err := redis.Bool(conn.Do(ctx, "EXISTS", deviceString))
 				if err != nil {
 					return err
 				}
@@ -76,12 +77,12 @@ func toInterfaceSlice(buckets []util.Bucket) []interface{} {
 }
 
 type GetUserDevicesService struct {
-	redisPool  *redis.Pool
+	redisPool  *redisservice.Pool
 	properties *BucketProperties
 	exec       *cuirass.Executor
 }
 
-func NewGetUserDevices(exec *cuirass.Executor, properties *BucketProperties, rp *redis.Pool) *GetUserDevicesService {
+func NewGetUserDevices(exec *cuirass.Executor, properties *BucketProperties, rp *redisservice.Pool) *GetUserDevicesService {
 	return &GetUserDevicesService{
 		redisPool:  rp,
 		properties: properties,

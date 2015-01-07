@@ -8,14 +8,14 @@ import (
 	"github.com/arjantop/cuirass"
 	"github.com/arjantop/cuirass/util/contextutil"
 	"github.com/arjantop/saola/httpservice"
-	"github.com/garyburd/redigo/redis"
+	"github.com/arjantop/saola/redisservice"
 	"github.com/protogalaxy/service-device-presence/device"
 	"github.com/protogalaxy/service-device-presence/util"
 	"golang.org/x/net/context"
 )
 
 func NewRedisSetDeviceStatusCommand(
-	pool *redis.Pool,
+	pool *redisservice.Pool,
 	properties *BucketProperties,
 	dev *device.Device,
 	status *device.DeviceStatus) *cuirass.Command {
@@ -31,14 +31,14 @@ func NewRedisSetDeviceStatusCommand(
 			var err error
 			if status.Status == device.StatusOnline {
 				ttl := int(properties.Ttl().Seconds())
-				conn.Send("MULTI")
-				conn.Send("SADD", bucketKey, deviceString)
-				conn.Send("EXPIRE", bucketKey, ttl)
-				conn.Send("SET", deviceString, status.UserId)
-				conn.Send("EXPIRE", deviceString, ttl)
-				_, err = conn.Do("EXEC")
+				conn.Send(ctx, "MULTI")
+				conn.Send(ctx, "SADD", bucketKey, deviceString)
+				conn.Send(ctx, "EXPIRE", bucketKey, ttl)
+				conn.Send(ctx, "SET", deviceString, status.UserId)
+				conn.Send(ctx, "EXPIRE", deviceString, ttl)
+				_, err = conn.Do(ctx, "EXEC")
 			} else {
-				_, err = conn.Do("DEL", deviceString)
+				_, err = conn.Do(ctx, "DEL", deviceString)
 			}
 			return err
 		})
@@ -56,12 +56,12 @@ func ExecRedisSetDeviceStatusCommand(
 }
 
 type SetDeviceStatusService struct {
-	redisPool  *redis.Pool
+	redisPool  *redisservice.Pool
 	properties *BucketProperties
 	exec       *cuirass.Executor
 }
 
-func NewSetDeviceStatus(exec *cuirass.Executor, properties *BucketProperties, rp *redis.Pool) *SetDeviceStatusService {
+func NewSetDeviceStatus(exec *cuirass.Executor, properties *BucketProperties, rp *redisservice.Pool) *SetDeviceStatusService {
 	return &SetDeviceStatusService{
 		redisPool:  rp,
 		properties: properties,

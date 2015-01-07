@@ -6,6 +6,7 @@ import (
 
 	"github.com/arjantop/saola"
 	"github.com/arjantop/saola/httpservice"
+	"github.com/arjantop/saola/redisservice"
 	"github.com/wadey/go-zipkin"
 	gzipkin "github.com/wadey/go-zipkin/gen-go/zipkin"
 	"golang.org/x/net/context"
@@ -61,6 +62,48 @@ func NewClientTracingFilter(cs []zipkin.SpanCollector) saola.Filter {
 		if err == nil {
 			trace.RecordBinary(zipkin.NewStringAnnotation("http.responsecode", strconv.Itoa(r.Response.StatusCode)))
 		}
+		trace.Record(zipkin.ClientRecvAnnotation(time.Now()))
+
+		return err
+	})
+}
+
+var (
+	trueBuffer = []byte{1}
+)
+
+func NewRedisTracingFilter(port int, cs []zipkin.SpanCollector) saola.Filter {
+	return saola.FuncFilter(func(ctx context.Context, s saola.Service) error {
+		r := redisservice.GetClientRequest(ctx)
+		parent, _ := GetTrace(ctx)
+		trace := parent.Child(r.Command)
+		oldEndpoint := trace.Endpoint
+		trace.Endpoint = &gzipkin.Endpoint{
+			Ipv4:        0,
+			Port:        int16(port),
+			ServiceName: s.Name(),
+		}
+
+		trace.Record(zipkin.ClientSendAnnotation(time.Now()))
+		trace.RecordBinary(&gzipkin.BinaryAnnotation{
+			Key:            "ca",
+			Value:          trueBuffer,
+			AnnotationType: gzipkin.AnnotationType_BOOL,
+			Host:           oldEndpoint,
+		})
+		trace.RecordBinary(&gzipkin.BinaryAnnotation{
+			Key:            "sa",
+			Value:          trueBuffer,
+			AnnotationType: gzipkin.AnnotationType_BOOL,
+			Host: &gzipkin.Endpoint{
+				Ipv4:        0,
+				Port:        int16(port),
+				ServiceName: s.Name(),
+			},
+		})
+
+		err := s.Do(withTrace(ctx, trace))
+
 		trace.Record(zipkin.ClientRecvAnnotation(time.Now()))
 
 		return err

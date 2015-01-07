@@ -39,9 +39,9 @@ func NewCustomError(statusCode int, message string, err error, data Data) ErrorR
 
 func NewErrorResponseFilter() saola.Filter {
 	return saola.FuncFilter(func(ctx context.Context, s saola.Service) error {
-		req := httpservice.GetServerRequest(ctx)
 		err := s.Do(ctx)
 		if er, ok := err.(ErrorResponse); ok {
+			req := httpservice.GetServerRequest(ctx)
 			req.Writer.WriteHeader(er.StatusCode)
 			req.Writer.Header().Set("Content-Type", "application/json")
 			encoder := json.NewEncoder(req.Writer)
@@ -63,13 +63,15 @@ func NewErrorResponseFilter() saola.Filter {
 
 func NewErrorLoggerFilter() saola.Filter {
 	return saola.FuncFilter(func(ctx context.Context, s saola.Service) error {
-		logger := GetContextLogger(ctx)
 		err := s.Do(ctx)
-		if er, ok := err.(ErrorResponse); ok {
-			er.Data["error"] = er.Err
-			logger.Warn(er.Message, log15.Ctx(er.Data))
-		} else if err != nil {
-			logger.Warn("service error", "error", err)
+		if err != nil {
+			logger := GetContextLogger(ctx)
+			if er, ok := err.(ErrorResponse); ok {
+				er.Data["error"] = er.Err
+				logger.Warn(er.Message, log15.Ctx(er.Data))
+			} else {
+				logger.Warn("service error", "error", err)
+			}
 		}
 		return err
 	})
