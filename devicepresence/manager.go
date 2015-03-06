@@ -39,6 +39,10 @@ type Manager struct {
 }
 
 func (m *Manager) SetStatus(ctx context.Context, req *StatusRequest) (*StatusReply, error) {
+	if err := validateRequest(req); err != nil {
+		return nil, err
+	}
+
 	conn := m.Redis.Get()
 	defer conn.Close()
 
@@ -65,6 +69,19 @@ func (m *Manager) SetStatus(ctx context.Context, req *StatusRequest) (*StatusRep
 	return &res, nil
 }
 
+func validateRequest(req *StatusRequest) error {
+	if req.Device == nil {
+		return errors.New("missing device")
+	}
+	if req.Device.Id == "" {
+		return errors.New("missing device id")
+	}
+	if req.Device.UserId == "" {
+		return errors.New("missing user id")
+	}
+	return nil
+}
+
 func makeKey(d *Device) string {
 	return fmt.Sprintf("%s:%s", d.Type, d.Id)
 }
@@ -74,6 +91,9 @@ func deviceTTL(bs time.Duration, n int) time.Duration {
 }
 
 func (m *Manager) GetDevices(req *DevicesRequest, stream PresenceManager_GetDevicesServer) error {
+	if req.UserId == "" {
+		return errors.New("missing user id")
+	}
 	conn := m.Redis.Get()
 	defer conn.Close()
 
