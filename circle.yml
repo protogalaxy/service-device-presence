@@ -1,0 +1,15 @@
+machine:
+  services:
+    - docker
+
+general:
+  artifacts:
+    - target
+
+dependencies:
+  override:
+    - echo
+
+test:
+  override:
+    - build/run.sh
