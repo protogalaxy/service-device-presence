@@ -1,26 +1,18 @@
 package main
 
 import (
-	"log"
+	"flag"
 	"math/rand"
 	"time"
 
-	"github.com/arjantop/cuirass"
-	"github.com/arjantop/cuirass/metricsstream"
-	"github.com/arjantop/saola"
-	"github.com/arjantop/saola/httpservice"
-	"github.com/arjantop/saola/redisservice"
-	"github.com/arjantop/vaquita"
-	"github.com/cactus/go-statsd-client/statsd"
 	"github.com/garyburd/redigo/redis"
-	"github.com/protogalaxy/service-device-presence/service"
-	"github.com/protogalaxy/service-device-presence/stats"
-	"github.com/protogalaxy/service-device-presence/util"
-	"github.com/wadey/go-zipkin"
+	"github.com/golang/glog"
+	"github.com/protogalaxy/service-device-presence/devicepresence"
+	"google.golang.org/grpc"
 )
 
 import (
-	"net/http"
+	"net"
 	_ "net/http/pprof"
 )
 
@@ -30,23 +22,10 @@ func DoPing(c redis.Conn) error {
 }
 
 func main() {
+	flag.Parse()
 	rand.Seed(time.Now().UnixNano())
-	config := vaquita.NewEmptyMapConfig()
-	config.SetProperty("cuirass.command.RedisSetDeviceStatus.execution.isolation.thread.timeoutInMilliseconds", "30")
-	config.SetProperty("cuirass.command.RedisGetUserDevices.execution.isolation.thread.timeoutInMilliseconds", "50")
 
-	propertyFactory := vaquita.NewPropertyFactory(config)
-	properties := service.NewBucketProperties(propertyFactory)
-	exec := cuirass.NewExecutor(config)
-
-	statsdClient, _ := statsd.Dial("localhost:8125", "protogalaxy.service.devicepresence")
-	defer statsdClient.Close()
-	statsReceiver := stats.NewStatsdStatsReceiver(statsdClient, 0.01)
-
-	scribe := []zipkin.SpanCollector{zipkin.NewScribeCollector("localhost:9410")}
-
-	newRedisPool := &redisservice.Pool{
-		Filter:      util.NewRedisTracingFilter(6379, scribe),
+	redisPool := &redis.Pool{
 		MaxIdle:     50,
 		IdleTimeout: time.Minute,
 		Dial: func() (redis.Conn, error) {
@@ -60,35 +39,16 @@ func main() {
 			return DoPing(c)
 		},
 	}
-	defer newRedisPool.Close()
+	defer redisPool.Close()
 
-	endpoint := httpservice.NewEndpoint()
+	socket, err := net.Listen("tcp", ":9090")
+	if err != nil {
+		glog.Fatalf("failed to listen: %v", err)
+	}
 
-	endpoint.PUT("/status/:deviceType/:deviceId", saola.Apply(
-		service.NewSetDeviceStatus(exec, properties, newRedisPool),
-		httpservice.NewCancellationFilter(),
-		util.NewContextLoggerFilter(),
-		util.NewServerTracingFilter(10000, scribe),
-		saola.NewStatsFilter(statsReceiver),
-		httpservice.NewResponseStatsFilter(statsReceiver),
-		util.NewErrorResponseFilter(),
-		util.NewErrorLoggerFilter()))
-
-	endpoint.GET("/users/:userId", saola.Apply(
-		service.NewGetUserDevices(exec, properties, newRedisPool),
-		httpservice.NewCancellationFilter(),
-		util.NewContextLoggerFilter(),
-		util.NewServerTracingFilter(10000, scribe),
-		saola.NewStatsFilter(statsReceiver),
-		httpservice.NewResponseStatsFilter(statsReceiver),
-		util.NewErrorResponseFilter(),
-		util.NewErrorLoggerFilter()))
-
-	go func() {
-		http.Handle("/cuirass.stream", metricsstream.NewMetricsStream(exec))
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-	log.Fatal(httpservice.Serve(":10000", saola.Apply(
-		endpoint,
-		httpservice.NewStdRequestLogFilter())))
+	grpcServer := grpc.NewServer()
+	devicepresence.RegisterPresenceManagerServer(grpcServer, &devicepresence.Manager{
+		Redis: redisPool,
+	})
+	grpcServer.Serve(socket)
 }

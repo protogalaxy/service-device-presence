@@ -1,0 +1,49 @@
+// Copyright (C) 2015 The Protogalaxy Project
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package devicepresence;
+
+service PresenceManager {
+  rpc SetStatus (StatusRequest) returns (StatusReply) {}
+  rpc GetDevices (DevicesRequest) returns (stream Device) {}
+}
+
+message StatusRequest {
+  Device device = 1;
+}
+
+message StatusReply {}
+
+message DevicesRequest {
+  string user_id = 1;
+}
+
+message Device {
+  enum Type {
+    WS = 0;
+  }
+
+  enum Status {
+    ONLINE = 0;
+    OFFLINE = 1;
+  }
+
+  string id = 1;
+  Type type = 2;
+  string user_id = 3;
+  Status status = 4;
+}

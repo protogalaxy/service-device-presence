@@ -43,7 +43,7 @@ func TestBucketWithOffset(t *testing.T) {
 	assert.Equal(t, "p:3599", b.String())
 }
 
-func TestBucketWithZeroOrEngativeDuration(t *testing.T) {
+func TestBucketWithZeroOrNegativeDuration(t *testing.T) {
 	c := clock.NewMock()
 	c.Set(time.Unix(5, 0))
 	b := util.CurrentBucket(c, "p", 0)

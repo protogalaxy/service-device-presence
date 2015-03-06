@@ -1,0 +1,57 @@
+{
+	"ImportPath": "github.com/protogalaxy/service-device-presence",
+	"GoVersion": "go1.4.2",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/101loops/clock",
+			"Rev": "d3356ea0bdccd8e1884c21d87afed8fa7933dc07"
+		},
+		{
+			"ImportPath": "github.com/bradfitz/http2",
+			"Rev": "2609cc0d65ebda013df59aaa43b9b6f3a7a686f5"
+		},
+		{
+			"ImportPath": "github.com/garyburd/redigo/internal",
+			"Rev": "535138d7bcd717d6531c701ef5933d98b1866257"
+		},
+		{
+			"ImportPath": "github.com/garyburd/redigo/redis",
+			"Rev": "535138d7bcd717d6531c701ef5933d98b1866257"
+		},
+		{
+			"ImportPath": "github.com/golang/glog",
+			"Rev": "44145f04b68cf362d9c4df2182967c2275eaefed"
+		},
+		{
+			"ImportPath": "github.com/golang/protobuf/proto",
+			"Rev": "c22ae3cf020a21ebb7ae566dccbe90fc8ea4f9ea"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Rev": "de7fcff264cd05cc0c90c509ea789a436a0dd206"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "67f25490433376b5f7da086c0b9283fcdeca3a7b"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2",
+			"Rev": "a0fac97f6e7d704570d0c97f9a9bec59989b2576"
+		},
+		{
+			"ImportPath": "google.golang.org/cloud/compute/metadata",
+			"Rev": "fffe461e194e54255fea3954c7197e300dc87811"
+		},
+		{
+			"ImportPath": "google.golang.org/cloud/internal",
+			"Rev": "fffe461e194e54255fea3954c7197e300dc87811"
+		},
+		{
+			"ImportPath": "google.golang.org/grpc",
+			"Rev": "575a9b2af86b7bd65453191f9aaed7266c327376"
+		}
+	]
+}
