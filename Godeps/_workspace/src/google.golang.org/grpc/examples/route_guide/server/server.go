@@ -48,14 +48,11 @@ import (
 	"net"
 	"time"
 
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-
-	"google.golang.org/grpc/credentials"
-
-	proto "github.com/golang/protobuf/proto"
-
-	pb "google.golang.org/grpc/examples/route_guide/proto"
+	proto "github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/golang/protobuf/proto"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/credentials"
+	pb "github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/examples/route_guide/proto"
 )
 
 var (

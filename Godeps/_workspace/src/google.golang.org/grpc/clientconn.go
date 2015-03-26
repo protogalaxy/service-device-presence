@@ -39,9 +39,9 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/net/context"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/transport"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/credentials"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/transport"
 )
 
 var (

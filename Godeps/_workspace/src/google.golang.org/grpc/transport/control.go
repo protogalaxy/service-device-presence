@@ -36,7 +36,7 @@ package transport
 import (
 	"sync"
 
-	"github.com/bradfitz/http2"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/bradfitz/http2"
 )
 
 // TODO(zhaoq): Make the following configurable.

@@ -22,8 +22,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/garyburd/redigo/internal/redistest"
-	"github.com/garyburd/redigo/redis"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/garyburd/redigo/internal/redistest"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/garyburd/redigo/redis"
 )
 
 type poolTestConn struct {

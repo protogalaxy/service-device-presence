@@ -42,11 +42,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	testpb "google.golang.org/grpc/interop/grpc_testing"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/golang/protobuf/proto"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/credentials"
+	testpb "github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/interop/grpc_testing"
 )
 
 var (

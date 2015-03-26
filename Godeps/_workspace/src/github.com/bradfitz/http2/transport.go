@@ -19,7 +19,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bradfitz/http2/hpack"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/bradfitz/http2/hpack"
 )
 
 type Transport struct {

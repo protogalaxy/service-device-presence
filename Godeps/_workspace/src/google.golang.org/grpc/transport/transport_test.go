@@ -45,9 +45,9 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/net/context"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/codes"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/credentials"
 )
 
 type server struct {

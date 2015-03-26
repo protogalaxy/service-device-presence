@@ -13,14 +13,15 @@ It has these top-level messages:
 	StatusReply
 	DevicesRequest
 	Device
+	Event
 */
 package devicepresence
 
-import proto "github.com/golang/protobuf/proto"
+import proto "github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/golang/protobuf/proto"
 
 import (
-	context "golang.org/x/net/context"
-	grpc "google.golang.org/grpc"
+	context "github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
+	grpc "github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -107,6 +108,22 @@ type Device struct {
 func (m *Device) Reset()         { *m = Device{} }
 func (m *Device) String() string { return proto.CompactTextString(m) }
 func (*Device) ProtoMessage()    {}
+
+type Event struct {
+	Timestamp int64   `protobuf:"varint,1,opt,name=timestamp" json:"timestamp,omitempty"`
+	Device    *Device `protobuf:"bytes,2,opt,name=device" json:"device,omitempty"`
+}
+
+func (m *Event) Reset()         { *m = Event{} }
+func (m *Event) String() string { return proto.CompactTextString(m) }
+func (*Event) ProtoMessage()    {}
+
+func (m *Event) GetDevice() *Device {
+	if m != nil {
+		return m.Device
+	}
+	return nil
+}
 
 func init() {
 	proto.RegisterEnum("devicepresence.Device_Type", Device_Type_name, Device_Type_value)

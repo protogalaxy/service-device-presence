@@ -43,13 +43,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/metadata"
-	testpb "google.golang.org/grpc/test/grpc_testing"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/golang/protobuf/proto"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/codes"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/credentials"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/metadata"
+	testpb "github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/test/grpc_testing"
 )
 
 var (

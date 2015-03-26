@@ -43,12 +43,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bradfitz/http2"
-	"github.com/bradfitz/http2/hpack"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/metadata"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/bradfitz/http2"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/bradfitz/http2/hpack"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/codes"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/credentials"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/metadata"
 )
 
 // http2Client implements the ClientTransport interface with HTTP2.

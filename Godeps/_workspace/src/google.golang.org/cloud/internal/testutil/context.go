@@ -21,9 +21,9 @@ import (
 	"net/http"
 	"os"
 
-	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/oauth2"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/oauth2/google"
 	"google.golang.org/cloud"
 )
 

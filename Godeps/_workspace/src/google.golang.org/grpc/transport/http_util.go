@@ -39,10 +39,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bradfitz/http2"
-	"github.com/bradfitz/http2/hpack"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/bradfitz/http2"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/bradfitz/http2/hpack"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/codes"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/metadata"
 )
 
 const (

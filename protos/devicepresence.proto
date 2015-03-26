@@ -47,3 +47,8 @@ message Device {
   string user_id = 3;
   Status status = 4;
 }
+
+message Event {
+  int64 timestamp = 1;
+  Device device = 2;
+}

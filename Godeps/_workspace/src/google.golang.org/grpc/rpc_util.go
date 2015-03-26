@@ -42,11 +42,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/transport"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/golang/protobuf/proto"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/codes"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/metadata"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/google.golang.org/grpc/transport"
 )
 
 // CallOption configures a Call before it starts or extracts information from

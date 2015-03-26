@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/net/context"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
 // Context can be an golang.org/x/net/context.Context, or an App Engine Context.

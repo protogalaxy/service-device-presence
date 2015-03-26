@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/101loops/clock"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/101loops/clock"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"github.com/protogalaxy/service-device-presence/util"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCurrentBucket(t *testing.T) {

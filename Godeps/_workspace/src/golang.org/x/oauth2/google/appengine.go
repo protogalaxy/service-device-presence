@@ -11,7 +11,7 @@ import (
 
 	"appengine"
 
-	"golang.org/x/oauth2"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/oauth2"
 )
 
 // AppEngineTokenSource returns a token source that fetches tokens

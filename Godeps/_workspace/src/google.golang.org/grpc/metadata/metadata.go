@@ -39,7 +39,7 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/net/context"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
 const (

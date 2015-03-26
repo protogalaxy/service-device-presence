@@ -23,19 +23,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/101loops/clock"
-	"github.com/garyburd/redigo/redis"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/101loops/clock"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/Shopify/sarama"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/garyburd/redigo/redis"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/golang/protobuf/proto"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/protogalaxy/service-device-presence/util"
-	"golang.org/x/net/context"
 )
 
 const (
 	BucketSize = time.Minute
 	NumBuckets = 5
+
+	streamTopic = "devicepresence-events"
 )
 
 type Manager struct {
-	Redis *redis.Pool
+	Redis  *redis.Pool
+	Stream sarama.SyncProducer
 }
 
 func (m *Manager) SetStatus(ctx context.Context, req *StatusRequest) (*StatusReply, error) {
@@ -47,6 +53,11 @@ func (m *Manager) SetStatus(ctx context.Context, req *StatusRequest) (*StatusRep
 	defer conn.Close()
 
 	bucketKey := util.CurrentBucket(clock.New(), req.Device.UserId, BucketSize)
+
+	event := Event{
+		Timestamp: time.Now().UnixNano(),
+		Device:    req.Device,
+	}
 
 	deviceKey := makeKey(req.Device)
 	var err error
@@ -62,6 +73,10 @@ func (m *Manager) SetStatus(ctx context.Context, req *StatusRequest) (*StatusRep
 	}
 
 	if err != nil {
+		return nil, err
+	}
+
+	if err := sendMessage(m.Stream, streamTopic, req.Device.UserId, &event); err != nil {
 		return nil, err
 	}
 
@@ -156,4 +171,19 @@ func parseDeviceType(t string) (Device_Type, error) {
 		return Device_Type(dt), nil
 	}
 	return 0, errors.New("invalid device type")
+}
+
+func sendMessage(p sarama.SyncProducer, topic string, key string, m proto.Message) error {
+	b, err := proto.Marshal(m)
+	if err != nil {
+		glog.Fatalf("Encoding message: %s", err)
+	}
+
+	msg := &sarama.ProducerMessage{
+		Topic: topic,
+		Value: sarama.ByteEncoder(b),
+		Key:   sarama.StringEncoder(key),
+	}
+	_, _, err = p.SendMessage(msg)
+	return err
 }

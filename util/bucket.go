@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/101loops/clock"
+	"github.com/protogalaxy/service-device-presence/Godeps/_workspace/src/github.com/101loops/clock"
 )
 
 type Bucket struct {
